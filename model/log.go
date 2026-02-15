@@ -160,7 +160,7 @@ func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
 	}
-	tx := LOG_DB.Table("logs").Select(fmt.Sprintf("%s(sum(quota),0)", ifnull))
+	tx := LOG_DB.Table("oneapi_logs").Select(fmt.Sprintf("%s(sum(quota),0)", ifnull))
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
@@ -188,7 +188,7 @@ func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
 	}
-	tx := LOG_DB.Table("logs").Select(fmt.Sprintf("%s(sum(prompt_tokens),0) + %s(sum(completion_tokens),0)", ifnull, ifnull))
+	tx := LOG_DB.Table("oneapi_logs").Select(fmt.Sprintf("%s(sum(prompt_tokens),0) + %s(sum(completion_tokens),0)", ifnull, ifnull))
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
@@ -239,7 +239,7 @@ func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatis
 		sum(quota) as quota,
 		sum(prompt_tokens) as prompt_tokens,
 		sum(completion_tokens) as completion_tokens
-		FROM logs
+		FROM oneapi_logs
 		WHERE type=2
 		AND user_id= ?
 		AND created_at BETWEEN ? AND ?

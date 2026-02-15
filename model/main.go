@@ -13,6 +13,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"os"
 	"strings"
 	"time"
@@ -88,6 +89,9 @@ func openPostgreSQL(dsn string) (*gorm.DB, error) {
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
 	}), &gorm.Config{
 		PrepareStmt: true, // precompile SQL
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "oneapi_",
+		},
 	})
 }
 
@@ -96,6 +100,9 @@ func openMySQL(dsn string) (*gorm.DB, error) {
 	common.UsingMySQL = true
 	return gorm.Open(mysql.Open(dsn), &gorm.Config{
 		PrepareStmt: true, // precompile SQL
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "oneapi_",
+		},
 	})
 }
 
@@ -105,6 +112,9 @@ func openSQLite() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s?_busy_timeout=%d", common.SQLitePath, common.SQLiteBusyTimeout)
 	return gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		PrepareStmt: true, // precompile SQL
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "oneapi_",
+		},
 	})
 }
 

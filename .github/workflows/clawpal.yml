@@ -17,9 +17,11 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Save version info
-        run: git describe --tags > VERSION
+        run: git describe --tags > VERSION || echo "v0.6.11-clawpal" > VERSION
 
       - uses: docker/setup-buildx-action@v3
 

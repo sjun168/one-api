@@ -22,6 +22,10 @@ import (
 var DB *gorm.DB
 var LOG_DB *gorm.DB
 
+// LogTableName is the fully-qualified log table name, set during DB init.
+// Used by log.go for hardcoded Table() and raw SQL references.
+var LogTableName = "oneapi_logs"
+
 func CreateRootAccountIfNeed() error {
 	var user User
 	//if user.Status != util.UserStatusEnabled {
@@ -84,13 +88,21 @@ func chooseDB(envName string) (*gorm.DB, error) {
 func openPostgreSQL(dsn string) (*gorm.DB, error) {
 	logger.SysLog("using PostgreSQL as database")
 	common.UsingPostgreSQL = true
+
+	tablePrefix := "oneapi_"
+	if dbSchema := os.Getenv("DB_SCHEMA"); dbSchema != "" {
+		logger.SysLog("using database schema: " + dbSchema)
+		tablePrefix = dbSchema + "." + tablePrefix
+		LogTableName = tablePrefix + "logs"
+	}
+
 	return gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
 	}), &gorm.Config{
 		PrepareStmt: true, // precompile SQL
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "oneapi_",
+			TablePrefix: tablePrefix,
 		},
 	})
 }

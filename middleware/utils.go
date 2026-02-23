@@ -2,19 +2,45 @@ package middleware
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/songquanpeng/one-api/common"
 	"github.com/songquanpeng/one-api/common/helper"
+	"github.com/songquanpeng/one-api/common/i18n"
 	"github.com/songquanpeng/one-api/common/logger"
-	"strings"
 )
 
+func mapPublicError(message string) (i18nKey string, code string, ok bool) {
+	normalized := strings.ToLower(strings.TrimSpace(message))
+	if normalized == "" {
+		return "", "", false
+	}
+
+	if strings.Contains(normalized, "该令牌状态不可用") ||
+		strings.Contains(normalized, "token status is unavailable") ||
+		strings.Contains(normalized, "该令牌额度已用尽") ||
+		strings.Contains(normalized, "额度已用尽") ||
+		strings.Contains(normalized, "token quota exhausted") {
+		return "billing_credits_exhausted", "billing_credits_exhausted", true
+	}
+
+	return "", "", false
+}
+
 func abortWithMessage(c *gin.Context, statusCode int, message string) {
+	displayMessage := message
+	errorPayload := gin.H{
+		"type": "one_api_error",
+	}
+	if i18nKey, code, ok := mapPublicError(message); ok {
+		displayMessage = i18n.Translate(c, i18nKey)
+		errorPayload["code"] = code
+	}
+	errorPayload["message"] = helper.MessageWithRequestId(displayMessage, c.GetString(helper.RequestIdKey))
+
 	c.JSON(statusCode, gin.H{
-		"error": gin.H{
-			"message": helper.MessageWithRequestId(message, c.GetString(helper.RequestIdKey)),
-			"type":    "one_api_error",
-		},
+		"error": errorPayload,
 	})
 	c.Abort()
 	logger.Error(c.Request.Context(), message)

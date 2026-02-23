@@ -1,5 +1,6 @@
 {
   "invalid_input": "无效的输入，请检查您的输入",
   "send_email_failed": "发送邮件失败：",
-  "invalid_parameter": "无效的参数"
+  "invalid_parameter": "无效的参数",
+  "billing_credits_exhausted": "额度不足，Bot 已暂停服务。充值后自动恢复。"
 }
